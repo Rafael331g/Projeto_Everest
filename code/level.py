@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import sys
 import random
 
-import pygame
+import pygame.display
 from pygame.font import Font
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -30,9 +29,7 @@ class Level:
         self.game_mode = game_mode
         self.entity_list: list[Entity] = []
 
-        self.entity_list.extend(
-            entityFactory.get_entity(self.name + 'Bg')
-        )
+        self.entity_list.extend(entityFactory.get_entity(self.name + 'Bg'))
 
         player = entityFactory.get_entity('Player1')
         player.score = player_score[0]
@@ -47,8 +44,8 @@ class Level:
         pygame.time.set_timer(EVENT_TIMEOUT, TIMEOUT_STEP)
 
     def run(self, player_score: list[int]):
-        pygame.mixer.music.load(f'./asset/{self.name}.mp3')
-        pygame.mixer.music.play(-1)
+        pygame.mixer_music.load(f'./asset/{self.name}.mp3')
+        pygame.mixer_music.play(-1)
 
         clock = pygame.time.Clock()
 
@@ -57,10 +54,7 @@ class Level:
 
             for ent in self.entity_list:
                 if ent is not None and ent.surf is not None:
-                    self.window.blit(
-                        source=ent.surf,
-                        dest=ent.rect
-                    )
+                    self.window.blit(source=ent.surf, dest=ent.rect)
 
                 if ent is not None:
                     ent.move()
@@ -95,10 +89,9 @@ class Level:
                 if event.type == EVENT_ENEMY:
                     if self.name == 'Level3':
                         choice = 'Enemy3'
+
                     else:
-                        choice = random.choice(
-                            ('Enemy1', 'Enemy2')
-                        )
+                        choice = random.choice(('Enemy1', 'Enemy2'))
 
                     self.entity_list.append(
                         entityFactory.get_entity(choice)
@@ -107,7 +100,7 @@ class Level:
                 if event.type == EVENT_TIMEOUT:
                     self.timeout -= TIMEOUT_STEP
 
-                    if self.timeout == 0:
+                    if self.timeout <= 0:
                         for ent in self.entity_list:
                             if isinstance(ent, Player) and ent.name == 'Player1':
                                 player_score[0] = ent.score
@@ -115,17 +108,10 @@ class Level:
                             if isinstance(ent, Player) and ent.name == 'Player2':
                                 player_score[1] = ent.score
 
+                        # Terminou a fase vivo
                         return True
 
-            found_player = False
-
-            for ent in self.entity_list:
-                if isinstance(ent, Player):
-                    found_player = True
-
-            if not found_player:
-                return False
-
+            # Printed text
             self.level_text(
                 14,
                 f'{self.name} - Timeout: {self.timeout / 1000 :.1f}s',
@@ -157,6 +143,143 @@ class Level:
             EntityMediator.verify_health(
                 entity_list=self.entity_list
             )
+
+            # ==============================
+            # VERIFICA VITÓRIA
+            # ==============================
+            for ent in self.entity_list:
+                if isinstance(ent, Player):
+                    if ent.score >= 500:
+
+                        if ent.name == 'Player1':
+                            player_score[0] = ent.score
+
+                        if ent.name == 'Player2':
+                            player_score[1] = ent.score
+
+                        self.result_screen(
+                            True,
+                            ent.name,
+                            ent.score
+                        )
+
+                        return False
+
+            # ==============================
+            # VERIFICA DERROTA
+            # ==============================
+            found_player = False
+
+            for ent in self.entity_list:
+                if isinstance(ent, Player):
+                    found_player = True
+
+            if not found_player:
+                self.result_screen(
+                    False
+                )
+
+                return False
+
+    def result_screen(self, victory: bool, player_name='', score=0):
+        pygame.mixer_music.stop()
+
+        while True:
+            self.window.fill((0, 0, 0))
+
+            if victory:
+                title = 'VITORIA!'
+                message = f'{player_name} atingiu {score} pontos!'
+                title_color = C_GREEN
+
+            else:
+                title = 'DERROTA!'
+                message = 'Seu jogador foi derrotado!'
+                title_color = (255, 0, 0)
+
+            # Título
+            title_font = pygame.font.SysFont(
+                name='Lucida Sans Typewriter',
+                size=50,
+                bold=True
+            )
+
+            title_surf = title_font.render(
+                title,
+                True,
+                title_color
+            ).convert_alpha()
+
+            title_rect = title_surf.get_rect(
+                center=(
+                    self.window.get_width() // 2,
+                    100
+                )
+            )
+
+            self.window.blit(
+                source=title_surf,
+                dest=title_rect
+            )
+
+            # Mensagem
+            message_font = pygame.font.SysFont(
+                name='Lucida Sans Typewriter',
+                size=20
+            )
+
+            message_surf = message_font.render(
+                message,
+                True,
+                C_WHITE
+            ).convert_alpha()
+
+            message_rect = message_surf.get_rect(
+                center=(
+                    self.window.get_width() // 2,
+                    165
+                )
+            )
+
+            self.window.blit(
+                source=message_surf,
+                dest=message_rect
+            )
+
+            # Instrução
+            return_font = pygame.font.SysFont(
+                name='Lucida Sans Typewriter',
+                size=18
+            )
+
+            return_surf = return_font.render(
+                'Pressione ENTER para voltar ao menu',
+                True,
+                C_WHITE
+            ).convert_alpha()
+
+            return_rect = return_surf.get_rect(
+                center=(
+                    self.window.get_width() // 2,
+                    230
+                )
+            )
+
+            self.window.blit(
+                source=return_surf,
+                dest=return_rect
+            )
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        return
+
+            pygame.display.flip()
 
     def level_text(self, text_size: int, text: str, text_color: tuple, text_pos: tuple):
         text_font: Font = pygame.font.SysFont(
