@@ -1,25 +1,73 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# import de pygame
+
 import pygame
 
-# Chamando o codigo Menu
-from Code.const import WIN_WIDTH, WIN_HEIGHT
+from Code.const import WIN_WIDTH, WIN_HEIGHT, MENU_OPTION
+from Code.level import Level
 from Code.menu import Menu
+from Code.score import Score
 
 
 class Game:
     def __init__(self):
-        # comando para iniciar o py game
         pygame.init()
+        self.window = pygame.display.set_mode(
+            size=(WIN_WIDTH, WIN_HEIGHT)
+        )
 
-        # inicializa a janela que iria mostrar o jogo ou algum grafico
-        self.window = pygame.display.set_mode(size=(WIN_WIDTH, WIN_HEIGHT))
-
-    def run(self, ):
-
-        # LOOP para manter a janela aberta
+    def run(self):
         while True:
+            score = Score(self.window)
+
             menu = Menu(self.window)
-            menu.run()
-            pass
+            menu_return = menu.run()
+
+            if menu_return in [
+                MENU_OPTION[0],
+                MENU_OPTION[1],
+                MENU_OPTION[2]
+            ]:
+                player_score = [0, 0]
+
+                level = Level(
+                    self.window,
+                    'Level1',
+                    menu_return,
+                    player_score
+                )
+                level_return = level.run(player_score)
+
+                if level_return:
+                    level = Level(
+                        self.window,
+                        'Level2',
+                        menu_return,
+                        player_score
+                    )
+                    level_return = level.run(player_score)
+
+                    if level_return:
+                        level = Level(
+                            self.window,
+                            'Level3',
+                            menu_return,
+                            player_score
+                        )
+                        level_return = level.run(player_score)
+
+                        if level_return:
+                            score.save(
+                                menu_return,
+                                player_score
+                            )
+
+            elif menu_return == MENU_OPTION[3]:
+                score.show()
+
+            elif menu_return == MENU_OPTION[4]:
+                pygame.quit()
+                quit()
+
+            else:
+                pass
