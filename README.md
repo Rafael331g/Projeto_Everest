@@ -54,18 +54,6 @@ Enemy3
 
 Cada um possui características próprias de vida, dano, velocidade, disparo e pontuação.
 
-📁 Estrutura
-Projeto_Everest/
-│
-├── asset/
-├── Code/
-├── main.py
-├── README.md
-├── requirements.txt
-└── .gitignore
-
-A pasta asset contém imagens, sprites, músicas e demais recursos utilizados pelo jogo.
-
 🛠️ Tecnologias
 Python 3.14
 pygame-ce 2.5.8
