@@ -65,7 +65,7 @@ class Menu:
         self.menu_text(16, "Atirar: Barra de Espaço", C_WHITE, ((WIN_WIDTH / 2), 165))
         self.menu_text(20, "PLAYER 2", C_YELLOW, ((WIN_WIDTH / 2), 205))
         self.menu_text(16, "Mover: W A S D", C_WHITE, ((WIN_WIDTH / 2), 235))
-        self.menu_text(16, "Atirar: Barra Espaço", C_WHITE, ((WIN_WIDTH / 2), 260))
+        self.menu_text(16, "Atirar: CTRL", C_WHITE, ((WIN_WIDTH / 2), 260))
         self.menu_text(15, "ESC para voltar", C_YELLOW, ((WIN_WIDTH / 2), 300))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
